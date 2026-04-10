@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสร้างใบเสร็จรับเงินออนไลน์ - JININIT Receipt Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&family=Sarabun:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --brand-charcoal: #2F2E47;
+            --brand-beige: #D5C5A2;
+            --brand-sage: #96C29A;
+            --brand-coral: #FF6F61;
+            --brand-teal: #2EC4B6;
+            --color-white: #FFFFFF;
+            --color-offwhite: #F7F5F0;
+            --color-lightbeige: #EDE8DF;
+            --color-text: #2F2E47;
+            --color-muted: #7A7A8C;
+            --color-border: #D5C5A2;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', 'Sarabun', sans-serif;
+            --font-thai: 'Sarabun', sans-serif;
+            --font-display: 'Pacifico', cursive;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            background: var(--color-offwhite);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* HEADER & NAV */
+        header {
+            background: var(--color-white);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--brand-charcoal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--brand-coral);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--brand-coral);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--brand-coral);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn-cta {
+            background: var(--brand-coral);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-cta:hover {
+            background: #E55A50;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 111, 97, 0.25);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--brand-coral);
+            border: 2px solid var(--brand-coral);
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-secondary:hover {
+            background: var(--brand-coral);
+            color: white;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, var(--color-offwhite) 0%, var(--color-lightbeige) 100%);
+            padding: 120px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-family: var(--font-heading);
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--brand-charcoal);
+            margin-bottom: 24px;
+            word-spacing: 100vw;
+        }
+
+        .hero-text h1 span {
+            color: var(--brand-coral);
+        }
+
+        .hero-text p {
+            font-family: var(--font-thai);
+            font-size: 18px;
+            color: var(--color-muted);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .badge-hero {
+            display: inline-block;
+            background: var(--brand-coral);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
+        }
+
+        .hero-illustration {
+            position: relative;
+            height: 400px;
+        }
+
+        .hero-illustration svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* DECORATIVE SHAPES */
+        .shape-blob-1 {
+            position: absolute;
+            bottom: -50px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: var(--brand-coral);
+            opacity: 0.1;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            animation: blob 8s infinite;
+        }
+
+        .shape-blob-2 {
+            position: absolute;
+            top: -80px;
+            left: -60px;
+            width: 300px;
+            height: 300px;
+            background: var(--brand-teal);
+            opacity: 0.08;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation: blob 10s infinite reverse;
+        }
+
+        @keyframes blob {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(20px, -50px) scale(1.1);
+            }
+            50% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+            75% {
+                transform: translate(50px, 50px) scale(1.05);
+            }
+        }
+
+        /* FEATURES SECTION */
+        .features {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 16px;
+        }
+
+        .section-header h2 .highlight {
+            color: var(--brand-coral);
+        }
+
+        .section-header p {
+            font-family: var(--font-thai);
+            font-size: 18px;
+            color: var(--color-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: var(--color-white);
+            padding: 40px;
+            border-radius: 12px;
+            border-top: 4px solid var(--brand-coral);
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card.green {
+            border-top-color: var(--brand-sage);
+        }
+
+        .feature-card.teal {
+            border-top-color: var(--brand-teal);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 16px;
+        }
+
+        .feature-card p {
+            font-family: var(--font-thai);
+            font-size: 15px;
+            color: var(--color-muted);
+            line-height: 1.8;
+        }
+
+        /* HOW IT WORKS */
+        .how-it-works {
+            background: var(--brand-charcoal);
+            color: white;
+            padding: 100px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .how-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .how-it-works h2 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 60px;
+            position: relative;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: var(--brand-coral);
+            border-radius: 50%;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .step h3 {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .step p {
+            font-family: var(--font-thai);
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+        }
+
+        .step::after {
+            content: '→';
+            position: absolute;
+            right: -35px;
+            top: 25px;
+            font-size: 32px;
+            color: var(--brand-teal);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        /* TESTIMONIALS */
+        .testimonials {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 40px;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .testimonial-card {
+            background: var(--color-white);
+            padding: 40px;
+            border-radius: 12px;
+            border-left: 4px solid var(--brand-teal);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .stars {
+            color: var(--brand-coral);
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .testimonial-card p {
+            font-family: var(--font-thai);
+            font-size: 15px;
+            color: var(--color-muted);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--brand-sage);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .author-info h4 {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 4px;
+        }
+
+        .author-info p {
+            font-family: var(--font-thai);
+            font-size: 12px;
+            color: var(--color-muted);
+            margin: 0;
+        }
+
+        /* PRICING */
+        .pricing {
+            background: linear-gradient(135deg, var(--color-offwhite) 0%, var(--color-lightbeige) 100%);
+            padding: 100px 40px;
+        }
+
+        .pricing-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .price-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border: 2px solid var(--brand-coral);
+            transform: scale(1.05);
+        }
+
+        .price-card:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--brand-coral);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .price-card h3 {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 20px;
+        }
+
+        .price-amount {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--brand-coral);
+            margin-bottom: 8px;
+        }
+
+        .price-period {
+            font-family: var(--font-thai);
+            font-size: 14px;
+            color: var(--color-muted);
+            margin-bottom: 30px;
+        }
+
+        .price-features {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .price-features li {
+            font-family: var(--font-thai);
+            font-size: 14px;
+            color: var(--color-muted);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--color-lightbeige);
+            position: relative;
+            padding-left: 28px;
+        }
+
+        .price-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--brand-sage);
+            font-weight: bold;
+        }
+
+        .price-card .btn-cta {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* CTA SECTION */
+        .cta-section {
+            background: var(--brand-charcoal);
+            color: white;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-family: var(--font-heading);
+            font-size: 44px;
+            font-weight: 900;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .cta-section p {
+            font-family: var(--font-thai);
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-cta-white {
+            background: white;
+            color: var(--brand-coral);
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-cta-white:hover {
+            background: var(--color-offwhite);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* FOOTER */
+        footer {
+            background: #1a1a24;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 60px 40px 20px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            font-family: var(--font-heading);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--brand-coral);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 20px;
+                padding: 16px 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .hero {
+                padding: 60px 20px;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-text h1 {
+                font-size: 40px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons button {
+                width: 100%;
+            }
+
+            .section-header h2 {
+                font-size: 36px;
+            }
+
+            .features-grid,
+            .testimonials-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-card.featured {
+                transform: scale(1);
+            }
+
+            .steps-grid {
+                gap: 30px;
+            }
+
+            .step::after {
+                display: none;
+            }
+
+            .cta-section h2 {
+                font-size: 32px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .cta-buttons button,
+            .hero-buttons button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-text h1 {
+                font-size: 32px;
+            }
+
+            .section-header h2 {
+                font-size: 28px;
+            }
+
+            nav {
+                padding: 12px 16px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <nav>
+            <a href="#" class="logo">
+                <div class="logo-mark">จ</div>
+                <span>Receipt Pro</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">คุณสมบัติ</a></li>
+                <li><a href="#how">วิธีการ</a></li>
+                <li><a href="#pricing">ราคา</a></li>
+                <li><a href="#contact">ติดต่อ</a></li>
+            </ul>
+            <button class="btn-cta" onclick="scrollToApp()">เริ่มใช้ฟรี</button>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="shape-blob-1"></div>
+        <div class="shape-blob-2"></div>
+        
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="badge-hero">สำนักพิมพ์ JININIT</div>
+                <h1>สร้างใบเสร็จ<br>อย่าง <span>มืออาชีพ</span></h1>
+                <p>ระบบสร้างใบเสร็จรับเงินออนไลน์ที่ง่ายและเร็ว สำหรับเจ้าของธุรกิจเล็กทั่วไป พร้อมบันทึก บาท และดาวน์โหลด PDF ได้ทันที</p>
+                <div class="hero-buttons">
+                    <button class="btn-cta" onclick="scrollToApp()">💡 ดูตัวอย่าง</button>
+                    <button class="btn-secondary" onclick="window.location.href='menu.html'">📖 ดูเมนู</button>
+                </div>
+            </div>
+            
+            <div class="hero-illustration">
+                <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Receipt illustration -->
+                    <rect x="60" y="40" width="280" height="340" fill="#D5C5A2" rx="8"/>
+                    <rect x="70" y="50" width="260" height="320" fill="white" rx="6"/>
+                    
+                    <!-- Receipt header -->
+                    <circle cx="90" cy="80" r="20" fill="#FF6F61" opacity="0.8"/>
+                    <text x="120" y="88" font-family="Montserrat" font-size="16" font-weight="700" fill="#2F2E47">ร้านแบบตัวอย่าง</text>
+                    
+                    <!-- Lines -->
+                    <line x1="70" y1="110" x2="330" y2="110" stroke="#EDE8DF" stroke-width="1"/>
+                    
+                    <!-- Items -->
+                    <text x="80" y="140" font-family="Sarabun" font-size="12" fill="#2F2E47" font-weight="600">สินค้า 1</text>
+                    <text x="250" y="140" font-family="Sarabun" font-size="12" fill="#2F2E47" text-anchor="end">฿ 200</text>
+                    
+                    <text x="80" y="170" font-family="Sarabun" font-size="12" fill="#2F2E47" font-weight="600">บริการ 2</text>
+                    <text x="250" y="170" font-family="Sarabun" font-size="12" fill="#2F2E47" text-anchor="end">฿ 500</text>
+                    
+                    <!-- Total -->
+                    <line x1="70" y1="200" x2="330" y2="200" stroke="#2F2E47" stroke-width="2"/>
+                    <text x="80" y="230" font-family="Montserrat" font-size="14" font-weight="700" fill="#2F2E47">รวมทั้งสิ้น</text>
+                    <text x="250" y="230" font-family="Montserrat" font-size="14" font-weight="700" fill="#FF6F61" text-anchor="end">฿ 700</text>
+                    
+                    <!-- Decorative elements -->
+                    <circle cx="340" cy="70" r="8" fill="#2EC4B6" opacity="0.3"/>
+                    <circle cx="350" cy="320" r="12" fill="#96C29A" opacity="0.2"/>
+                    <path d="M 50 150 Q 60 140 70 150" stroke="#FF6F61" stroke-width="2" fill="none" opacity="0.3"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>คุณสมบัติ<br><span class="highlight">ที่แข็งแกร่ง</span></h2>
+            <p>ทุกอย่างที่คุณต้องการสำหรับสร้างใบเสร็จมืออาชีพในวินาทีเดียว</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>อัปโหลดโลโก้</h3>
+                <p>เพิ่มโลโก้ร้านของคุณ และระบบจะเสนอสีที่ลงตัวโดยอัตโนมัติ</p>
+            </div>
+
+            <div class="feature-card green">
+                <div class="feature-icon">🎨</div>
+                <h3>ปรับสีแบรนด์</h3>
+                <p>เลือกสีหลักของร้านเพื่อให้ใบเสร็จสื่อถึงตัวตนของธุรกิจ</p>
+            </div>
+
+            <div class="feature-card teal">
+                <div class="feature-icon">⚡</div>
+                <h3>ตัวอย่างสดในเรียลไทม์</h3>
+                <p>เห็นผลลัพธ์ทันทีขณะที่คุณพิมพ์ข้อมูล</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>บันทึกข้อมูล</h3>
+                <p>บันทึกใบเสร็จลงเบราว์เซอร์เพื่อใช้งานครั้งต่อไป</p>
+            </div>
+
+            <div class="feature-card green">
+                <div class="feature-icon">📥</div>
+                <h3>ดาวน์โหลด PDF</h3>
+                <p>ส่งให้ลูกค้าหรือปรินต์ได้ทันที พร้อมคุณภาพสูง</p>
+            </div>
+
+            <div class="feature-card teal">
+                <div class="feature-icon">🧮</div>
+                <h3>คำนวณราคา</h3>
+                <p>รองรับส่วนลด ภาษีมูลค่าเพิ่ม และการคำนวณอัตโนมัติ</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-it-works" id="how">
+        <div class="how-content">
+            <h2>วิธีการใช้งาน</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>ตั้งค่าร้าน</h3>
+                    <p>อัปโหลดโลโก้และบันทึกข้อมูลธุรกิจของคุณ</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>เพิ่มรายการ</h3>
+                    <p>เพิ่มสินค้า/บริการ ตั้งราคา และจำนวน</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>ตรวจสอบ</h3>
+                    <p>ดูตัวอย่างใบเสร็จในเรียลไทม์</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>บันทึก & ดาวน์โหลด</h3>
+                    <p>บันทึกหรือดาวน์โหลด PDF ให้ลูกค้า</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials" id="testimonials">
+        <div class="section-header">
+            <h2>พูดคุยจากผู้ใช้<br><span class="highlight">ที่พึงพอใจ</span></h2>
+        </div>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"ระบบนี้ช่วยให้ฉันประหยัดเวลาในการสร้างใบเสร็จ ตอนนี้ผมสามารถให้ใบเสร็จให้ลูกค้าได้ทันที!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">น</div>
+                    <div class="author-info">
+                        <h4>นายสมชัย</h4>
+                        <p>เจ้าของร้านค้า</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"ฟีเจอร์ส่วนลดและภาษีช่วยให้ฉันจัดการธุรกิจได้ง่ายขึ้น ขอบคุณมาก!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">ร</div>
+                    <div class="author-info">
+                        <h4>นางรจนา</h4>
+                        <p>ผู้จัดการร้านตัวเล็ก</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <p>"ใช้ง่าย สะอาด และออกมาดีมากสำหรับธุรกิจขนาดเล็ก เหมาะสำหรับทีมของเรา!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">ป</div>
+                    <div class="author-info">
+                        <h4>ปรีชา</h4>
+                        <p>เจ้าของสตูดิโอขนาดเล็ก</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section class="pricing" id="pricing">
+        <div class="pricing-content">
+            <div class="section-header">
+                <h2>ราคา<br><span class="highlight">ที่ยุติธรรม</span></h2>
+                <p>เลือกแผนที่เหมาะสมกับธุรกิจของคุณ</p>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>ฟรี</h3>
+                    <div class="price-amount">฿0</div>
+                    <div class="price-period">ตลอดไป</div>
+                    <ul class="price-features">
+                        <li>สร้างใบเสร็จ 100 ฉบับ/เดือน</li>
+                        <li>บันทึกข้อมูล</li>
+                        <li>ดาวน์โหลด PDF</li>
+                        <li>บันทึกข้อมูล 10 รายการล่าสุด</li>
+                    </ul>
+                    <button class="btn-secondary" onclick="scrollToApp()">เริ่มใช้ฟรี</button>
+                </div>
+
+                <div class="price-card featured">
+                    <div class="featured-badge">ยอดนิยม</div>
+                    <h3>โปรแกรม</h3>
+                    <div class="price-amount">฿99</div>
+                    <div class="price-period">ต่อเดือน</div>
+                    <ul class="price-features">
+                        <li>สร้างใบเสร็จไม่จำกัด</li>
+                        <li>บันทึกข้อมูลไม่จำกัด</li>
+                        <li>ดาวน์โหลด PDF คุณภาพสูง</li>
+                        <li>สนับสนุน 24/7</li>
+                        <li>ส่งออกข้อมูล</li>
+                    </ul>
+                    <button class="btn-cta" onclick="scrollToApp()">เลือกแผน</button>
+                </div>
+
+                <div class="price-card">
+                    <h3>องค์กร</h3>
+                    <div class="price-amount">ตามสัญญา</div>
+                    <div class="price-period">ระดับองค์กร</div>
+                    <ul class="price-features">
+                        <li>ทุกสิ่งใน Pro</li>
+                        <li>การตั้งค่าที่ปรับแต่ง</li>
+                        <li>เซิร์ฟเวอร์เฉพาะ</li>
+                        <li>ผู้ดูแลบัญชี</li>
+                        <li>API ที่เข้ากันได้</li>
+                    </ul>
+                    <button class="btn-secondary" onclick="alert('ติดต่อ sales@jininit.com')">ติดต่อ</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section" id="contact">
+        <div class="cta-content">
+            <h2>พร้อมเริ่มสร้างใบเสร็จ<br>อย่างมืออาชีพ?</h2>
+            <p>ลงทะเบียนวันนี้และใช้งานฟรีได้เลย ไม่ต้องใส่บัตรเครดิต</p>
+            <div class="cta-buttons">
+                <button class="btn-cta-white" onclick="scrollToApp()">เริ่มใช้ฟรี</button>
+                <button class="btn-secondary" style="color: white; border-color: white;" onclick="alert('เร็วๆ นี้!')">📞 ติดต่อ</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>เกี่ยวกับเรา</h3>
+                <ul>
+                    <li><a href="#">เกี่ยวกับ Receipt Pro</a></li>
+                    <li><a href="#">บล็อก</a></li>
+                    <li><a href="#">ประกาศข่าว</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>สินค้า</h3>
+                <ul>
+                    <li><a href="#">ฟีเจอร์</a></li>
+                    <li><a href="#">ราคา</a></li>
+                    <li><a href="#">ดาวน์โหลด</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>ศูนย์ช่วยเหลือ</h3>
+                <ul>
+                    <li><a href="#">คำถามที่พบบ่อย</a></li>
+                    <li><a href="#">ปัญหาที่พบ</a></li>
+                    <li><a href="#">เอกสาร</a></li>
+                    <li><a href="#">ติดต่อเรา</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>กฎหมาย</h3>
+                <ul>
+                    <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
+                    <li><a href="#">เงื่อนไขการใช้บริการ</a></li>
+                    <li><a href="#">คุกกี้</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 สำนักพิมพ์ JININIT - Receipt Pro. ลิขสิทธิ์สงวนไว้</p>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToApp() {
+            // เปลี่ยนเป็นไปยัง menu dashboard
+            window.location.href = 'menu.html';
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Add animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .price-card, .testimonial-card, .step').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

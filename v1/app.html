@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสร้างใบเสร็จ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Mitr', 'Segoe UI', sans-serif; background: #f8f7f5; color: #333; }
+        .app-wrapper { display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 300px; background: white; border-right: 1px solid #e5e5e5; padding: 20px; overflow-y: auto; }
+        .sidebar-section { margin-bottom: 20px; }
+        .sidebar-title { font-size: 12px; font-weight: 700; color: #999; margin-bottom: 10px; text-transform: uppercase; }
+        .form-group { margin-bottom: 12px; }
+        .form-label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+        .form-input, .form-textarea { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-family: 'Mitr', sans-serif; width: 100%; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: #2c5aa0; box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.08); }
+        .color-picker { width: 100%; height: 40px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
+        .logo-preview { width: 100%; height: 80px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden; margin-top: 8px; }
+        .logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .main-content { flex: 1; display: flex; overflow: hidden; }
+        .editor-panel { flex: 1; padding: 24px; overflow-y: auto; background: white; border-right: 1px solid #e5e5e5; }
+        .preview-panel { width: 500px; padding: 24px; overflow-y: auto; background: #f8f7f5; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 24px; }
+        .btn { padding: 10px 16px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: 'Mitr', sans-serif; transition: all 0.2s; }
+        .btn:hover { background: #f5f5f5; }
+        .btn-primary { background: #2980b9; color: white; border-color: #2980b9; }
+        .btn-primary:hover { background: #1e5aa0; }
+        .btn-success { background: #27ae60; color: white; border-color: #27ae60; }
+        .btn-danger { background: #e74c3c; color: white; border-color: #c0392b; }
+        .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #666; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .item-row { display: grid; grid-template-columns: 60px 1fr 80px 100px 100px 40px; gap: 8px; margin-bottom: 10px; align-items: center; }
+        .item-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+        .btn-remove { padding: 6px 10px; background: #fee; border: 1px solid #f0b; color: #c33; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+        .btn-add-item { background: #ecf0f7; color: #2c5aa0; border: 1px solid #2c5aa0; margin-top: 10px; }
+        .receipt { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 13px; line-height: 1.6; }
+        .receipt-header { display: flex; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #333; }
+        .logo-section { width: 50px; height: 50px; border: 1px solid #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden; flex-shrink: 0; }
+        .logo-section img { width: 100%; height: 100%; object-fit: contain; }
+        .business-section { flex: 1; }
+        .business-name { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+        .business-info { font-size: 12px; line-height: 1.5; color: #666; }
+        .receipt-title { text-align: right; font-size: 16px; font-weight: bold; }
+        .receipt-meta { text-align: right; font-size: 12px; color: #666; margin-bottom: 20px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+        .items-table th { background: #f5f5f5; padding: 8px; text-align: left; font-weight: bold; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+        .items-table td { padding: 8px; border-bottom: 0.5px solid #e5e5e5; }
+        .num-col { text-align: right; }
+        .totals-section { margin: 20px 0; padding: 12px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+        .total-row { display: flex; justify-content: space-between; font-size: 13px; margin: 6px 0; }
+        .total-grand { font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .footer-section { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">ตั้งค่าร้านค้า</div>
+                <div class="form-group">
+                    <label class="form-label">โลโก้ร้าน</label>
+                    <input type="file" id="logoInput" accept="image/*" class="form-input" style="padding: 6px;">
+                    <div class="logo-preview" id="logoPreview">📸</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ชื่อร้าน</label>
+                    <input type="text" id="businessName" class="form-input" value="ร้านแบบตัวอย่าง">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ที่อยู่</label>
+                    <textarea id="businessAddress" class="form-textarea" style="min-height: 60px;">123 ถนนสุขุมวิท แขวงสำโรง เขตสมุทรปราการ</textarea>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">โทรศัพท์</label>
+                        <input type="text" id="businessPhone" class="form-input" value="081-234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">เลขประจำตัว</label>
+                        <input type="text" id="taxId" class="form-input" value="0105555003241">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-panel">
+                <div class="toolbar">
+                    <button class="btn btn-danger" onclick="goBackToMenu()">← กลับไปเมนู</button>
+                    <button class="btn btn-primary" onclick="downloadPDF()">📄 ดาวน์โหลด PDF</button>
+                    <button class="btn btn-success" onclick="saveReceipt()">💾 บันทึก</button>
+                    <button class="btn" onclick="resetForm()">🔄 ล้างข้อมูล</button>
+                </div>
+
+                <div style="margin-bottom: 28px;">
+                    <div class="section-title">ข้อมูลใบเสร็จ</div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">เลขที่</label>
+                            <input type="text" id="receiptNumber" class="form-input" value="001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">วันที่</label>
+                            <input type="date" id="receiptDate" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 28px;">
+                    <div class="section-title">ข้อมูลลูกค้า</div>
+                    <div class="form-group">
+                        <label class="form-label">ชื่อลูกค้า</label>
+                        <input type="text" id="customerName" class="form-input" value="นายสมใจ">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ที่อยู่ (ไม่บังคับ)</label>
+                        <textarea id="customerAddress" class="form-textarea" style="min-height: 50px;"></textarea>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 28px;">
+                    <div class="section-title">รายการสินค้า</div>
+                    <div id="itemsContainer">
+                        <div class="item-row">
+                            <input type="number" placeholder="ลำดับ" value="1" class="item-index" min="1" style="text-align: center;">
+                            <input type="text" placeholder="รายการ" class="item-name" value="สินค้าตัวอย่าง">
+                            <input type="number" placeholder="จำนวน" class="item-qty" value="2" min="0.01" step="0.01" style="text-align: center;">
+                            <input type="number" placeholder="ราคา" class="item-price" value="100" min="0" step="0.01" style="text-align: right;">
+                            <input type="number" placeholder="รวม" class="item-total" readonly style="background: #f5f5f5; text-align: right;" value="200">
+                            <button class="btn-remove" onclick="this.parentElement.remove(); updatePreview()">ลบ</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-add-item" onclick="addItem()">+ เพิ่ม</button>
+                </div>
+
+                <div style="margin-bottom: 28px;">
+                    <div class="section-title">ส่วนรวม</div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">ยอดรวม</label>
+                            <input type="number" id="subtotal" class="form-input" value="200" readonly style="background: #f5f5f5;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ส่วนลด</label>
+                            <input type="number" id="discount" class="form-input" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">ภาษี %</label>
+                        <input type="number" id="vatPercent" class="form-input" value="0" min="0" max="100">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">ยอดสุทธิ</label>
+                        <input type="number" id="grandTotal" class="form-input" value="200" readonly style="background: #f5f5f5; font-weight: bold;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="receipt" id="receiptPreview">
+                    <div class="receipt-header">
+                        <div class="logo-section" id="previewLogo"></div>
+                        <div class="business-section">
+                            <div class="business-name" id="previewBusinessName">ร้านแบบตัวอย่าง</div>
+                            <div class="business-info" id="previewBusinessInfo">ที่อยู่: 123 ถนนสุขุมวิท<br>โทร: 081-234-5678</div>
+                        </div>
+                        <div class="receipt-title">ใบเสร็จรับเงิน</div>
+                    </div>
+
+                    <div class="receipt-meta">
+                        <div>เลขที่: <span id="previewReceiptNumber">001</span></div>
+                        <div>วันที่: <span id="previewDate">-</span></div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-weight: bold; font-size: 12px; margin-bottom: 4px;">ลูกค้า</div>
+                        <div id="previewCustomerName" style="font-size: 13px;">นายสมใจ</div>
+                    </div>
+
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ลำดับ</th>
+                                <th>รายการ</th>
+                                <th style="width: 70px; text-align: center;">จำนวน</th>
+                                <th style="width: 70px;" class="num-col">ราคา</th>
+                                <th style="width: 70px;" class="num-col">รวม</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewItems">
+                            <tr>
+                                <td>1</td>
+                                <td>สินค้าตัวอย่าง</td>
+                                <td style="text-align: center;">2</td>
+                                <td class="num-col">100.00</td>
+                                <td class="num-col">200.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="totals-section">
+                        <div class="total-row">
+                            <span>ยอดรวม:</span>
+                            <span id="previewSubtotal">200.00</span>
+                        </div>
+                        <div class="total-row" id="previewDiscountRow" style="display: none;">
+                            <span>ส่วนลด:</span>
+                            <span id="previewDiscount">0.00</span>
+                        </div>
+                        <div class="total-row" id="previewVatRow" style="display: none;">
+                            <span>ภาษี:</span>
+                            <span id="previewVat">0.00</span>
+                        </div>
+                        <div class="total-row total-grand">
+                            <span>ยอดสุทธิ:</span>
+                            <span id="previewGrandTotal">200.00</span>
+                        </div>
+                    </div>
+
+                    <div class="footer-section">ขอบคุณที่สนับสนุนธุรกิจ!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('receiptDate').valueAsDate = new Date();
+
+        // Logo upload
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('โปรดเลือกไฟล์รูปภาพ');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = '<img src="' + event.target.result + '">';
+                document.getElementById('logoPreview').innerHTML = img;
+                document.getElementById('previewLogo').innerHTML = img;
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Input listeners
+        ['businessName', 'businessAddress', 'businessPhone', 'taxId', 'receiptNumber', 'receiptDate', 'customerName', 'customerAddress', 'discount', 'vatPercent'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updatePreview);
+        });
+
+        function setupItemRow(row) {
+            const updateTotal = () => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                row.querySelector('.item-total').value = (qty * price).toFixed(2);
+                updatePreview();
+            };
+            row.querySelector('.item-qty').addEventListener('input', updateTotal);
+            row.querySelector('.item-price').addEventListener('input', updateTotal);
+            row.querySelectorAll('input').forEach(inp => inp.addEventListener('change', updatePreview));
+        }
+
+        document.querySelectorAll('.item-row').forEach(setupItemRow);
+
+        function addItem() {
+            const container = document.getElementById('itemsContainer');
+            const index = container.children.length + 1;
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = '<input type="number" placeholder="ลำดับ" value="' + index + '" class="item-index" min="1" style="text-align: center;"><input type="text" placeholder="รายการ" class="item-name"><input type="number" placeholder="จำนวน" class="item-qty" value="1" min="0.01" step="0.01" style="text-align: center;"><input type="number" placeholder="ราคา" class="item-price" value="0" min="0" step="0.01" style="text-align: right;"><input type="number" placeholder="รวม" class="item-total" readonly style="background: #f5f5f5; text-align: right;" value="0"><button class="btn-remove" onclick="this.parentElement.remove(); updatePreview()">ลบ</button>';
+            container.appendChild(row);
+            setupItemRow(row);
+            updatePreview();
+        }
+
+        function calculateTotals() {
+            const rows = document.querySelectorAll('.item-row');
+            let subtotal = 0;
+            rows.forEach(row => {
+                subtotal += parseFloat(row.querySelector('.item-total').value) || 0;
+            });
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const vatPercent = parseFloat(document.getElementById('vatPercent').value) || 0;
+            const afterDiscount = subtotal - discount;
+            const vat = (afterDiscount * vatPercent) / 100;
+            return { subtotal, discount, vat, grandTotal: afterDiscount + vat };
+        }
+
+        function updatePreview() {
+            const rows = document.querySelectorAll('.item-row');
+            const totals = calculateTotals();
+
+            document.getElementById('previewBusinessName').textContent = document.getElementById('businessName').value;
+            document.getElementById('previewBusinessInfo').innerHTML = 'ที่อยู่: ' + document.getElementById('businessAddress').value + '<br>โทร: ' + document.getElementById('businessPhone').value + '<br>เลขประจำตัว: ' + document.getElementById('taxId').value;
+            document.getElementById('previewReceiptNumber').textContent = document.getElementById('receiptNumber').value;
+            document.getElementById('previewDate').textContent = document.getElementById('receiptDate').value || '-';
+            document.getElementById('previewCustomerName').textContent = document.getElementById('customerName').value;
+
+            let itemsHTML = '';
+            let idx = 1;
+            rows.forEach(row => {
+                const name = row.querySelector('.item-name').value || '-';
+                const qty = row.querySelector('.item-qty').value || '0';
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = parseFloat(row.querySelector('.item-total').value) || 0;
+                itemsHTML += '<tr><td>' + idx + '</td><td>' + name + '</td><td style="text-align: center;">' + qty + '</td><td class="num-col">' + price.toFixed(2) + '</td><td class="num-col">' + total.toFixed(2) + '</td></tr>';
+                idx++;
+            });
+            document.getElementById('previewItems').innerHTML = itemsHTML;
+
+            document.getElementById('subtotal').value = totals.subtotal.toFixed(2);
+            document.getElementById('grandTotal').value = totals.grandTotal.toFixed(2);
+            document.getElementById('previewSubtotal').textContent = totals.subtotal.toFixed(2);
+            document.getElementById('previewDiscount').textContent = totals.discount.toFixed(2);
+            document.getElementById('previewVat').textContent = totals.vat.toFixed(2);
+            document.getElementById('previewGrandTotal').textContent = totals.grandTotal.toFixed(2);
+            document.getElementById('previewDiscountRow').style.display = totals.discount > 0 ? 'flex' : 'none';
+            document.getElementById('previewVatRow').style.display = totals.vat > 0 ? 'flex' : 'none';
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('receiptPreview');
+            const receiptNumber = document.getElementById('receiptNumber').value || 'REC-001';
+            const receiptDate = document.getElementById('receiptDate').value || new Date().toISOString().split('T')[0];
+            
+            const opt = {
+                margin: 10,
+                filename: 'receipt_' + receiptNumber + '_' + receiptDate + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function saveReceipt() {
+            alert('บันทึกสำเร็จ!');
+        }
+
+        function resetForm() {
+            if (confirm('ต้องการล้างข้อมูลไหม?')) {
+                document.getElementById('itemsContainer').innerHTML = '<div class="item-row"><input type="number" placeholder="ลำดับ" value="1" class="item-index" min="1" style="text-align: center;"><input type="text" placeholder="รายการ" class="item-name"><input type="number" placeholder="จำนวน" class="item-qty" value="1" min="0.01" step="0.01" style="text-align: center;"><input type="number" placeholder="ราคา" class="item-price" value="0" min="0" step="0.01" style="text-align: right;"><input type="number" placeholder="รวม" class="item-total" readonly style="background: #f5f5f5; text-align: right;" value="0"><button class="btn-remove" onclick="this.parentElement.remove(); updatePreview()">ลบ</button></div>';
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerAddress').value = '';
+                document.getElementById('discount').value = '0';
+                document.getElementById('vatPercent').value = '0';
+                document.querySelectorAll('.item-row').forEach(setupItemRow);
+                updatePreview();
+            }
+        }
+
+        function goBackToMenu() {
+            window.location.href = 'menu.html';
+        }
+
+        updatePreview();
+    </script>
+</body>
+</html>

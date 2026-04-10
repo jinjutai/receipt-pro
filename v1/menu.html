@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เมนูบัญชี - ระบบบัญชีรายวัน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --brand-charcoal: #2F2E47;
+            --brand-beige: #D5C5A2;
+            --brand-sage: #96C29A;
+            --brand-coral: #FF6F61;
+            --brand-teal: #2EC4B6;
+            --color-white: #FFFFFF;
+            --color-offwhite: #F7F5F0;
+            --color-lightbeige: #EDE8DF;
+            --color-text: #2F2E47;
+            --color-muted: #7A7A8C;
+            --font-heading: 'Montserrat', sans-serif;
+            --font-body: 'Montserrat', 'Sarabun', sans-serif;
+            --font-thai: 'Sarabun', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            background: var(--color-offwhite);
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        header {
+            background: var(--color-white);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--brand-charcoal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .logo-mark {
+            width: 32px;
+            height: 32px;
+            background: var(--brand-coral);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .btn-nav {
+            background: var(--brand-coral);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-nav:hover {
+            background: #E55A50;
+            transform: translateY(-2px);
+        }
+
+        /* MAIN CONTENT */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--brand-charcoal);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .page-header h1 .highlight {
+            color: var(--brand-coral);
+        }
+
+        .page-header p {
+            font-family: var(--font-thai);
+            font-size: 16px;
+            color: var(--color-muted);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--brand-coral);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 20px;
+        }
+
+        /* MENU GRID */
+        .menu-section {
+            margin-bottom: 60px;
+        }
+
+        .menu-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--brand-sage);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-title-icon {
+            font-size: 32px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .menu-card {
+            background: var(--color-white);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-top: 4px solid var(--brand-teal);
+            position: relative;
+        }
+
+        .menu-card.active {
+            border-top-color: var(--brand-coral);
+        }
+
+        .menu-card.active:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(255, 111, 97, 0.2);
+        }
+
+        .menu-card.coming-soon {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .menu-card.coming-soon:hover {
+            transform: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .menu-number {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--brand-coral);
+        }
+
+        .menu-card.coming-soon .menu-number {
+            color: var(--color-muted);
+        }
+
+        .menu-title-text {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+        }
+
+        .menu-description {
+            font-family: var(--font-thai);
+            font-size: 13px;
+            color: var(--color-muted);
+        }
+
+        .menu-badge {
+            display: inline-block;
+            background: #FFE8E8;
+            color: var(--brand-coral);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            align-self: flex-start;
+        }
+
+        .menu-badge.available {
+            background: #E8F5E9;
+            color: var(--brand-sage);
+        }
+
+        .menu-file-type {
+            font-family: var(--font-thai);
+            font-size: 12px;
+            color: var(--color-muted);
+            margin-top: auto;
+        }
+
+        .menu-file-type span {
+            background: var(--color-lightbeige);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .menu-action {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-lightbeige);
+        }
+
+        .btn-menu {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-menu-active {
+            background: var(--brand-coral);
+            color: white;
+        }
+
+        .btn-menu-active:hover {
+            background: #E55A50;
+            transform: translateY(-2px);
+        }
+
+        .btn-menu-disabled {
+            background: var(--color-lightbeige);
+            color: var(--color-muted);
+            cursor: not-allowed;
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: linear-gradient(135deg, var(--color-offwhite) 0%, var(--color-lightbeige) 100%);
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid var(--brand-teal);
+            margin-bottom: 60px;
+        }
+
+        .info-box h3 {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--brand-charcoal);
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            font-family: var(--font-thai);
+            font-size: 14px;
+            color: var(--color-muted);
+            line-height: 1.8;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px 20px;
+            }
+
+            .container {
+                padding: 40px 20px;
+            }
+
+            .page-header h1 {
+                font-size: 36px;
+            }
+
+            .menu-title {
+                font-size: 22px;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-card {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .menu-card:nth-child(1) { animation-delay: 0.1s; }
+        .menu-card:nth-child(2) { animation-delay: 0.2s; }
+        .menu-card:nth-child(3) { animation-delay: 0.3s; }
+        .menu-card:nth-child(4) { animation-delay: 0.4s; }
+        .menu-card:nth-child(5) { animation-delay: 0.5s; }
+        .menu-card:nth-child(6) { animation-delay: 0.6s; }
+        .menu-card:nth-child(7) { animation-delay: 0.7s; }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <nav>
+            <a href="landing-page-receipt-jininit.html" class="logo">
+                <div class="logo-mark">จ</div>
+                <span>Receipt Pro</span>
+            </a>
+            <div class="header-right">
+                <button class="btn-nav" onclick="goToLanding()">← กลับ</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+            <div class="badge">สำนักพิมพ์ JININIT</div>
+            <h1>Template บัญชี<br><span class="highlight">รายวัน</span></h1>
+            <p>เลือกสำเร็จแบบฟอร์มบัญชีที่ต้องการใช้งาน ปัจจุบันเปิด MVP สำหรับ ใบเสร็จรับเงิน เท่านั้น</p>
+        </div>
+
+        <!-- INFO BOX -->
+        <div class="info-box">
+            <h3>💡 MVP Testing Phase</h3>
+            <p>ขณะนี้เรากำลังทดสอบฟีเจอร์ "ใบเสร็จรับเงิน" เป็นรายแรก หากท่านสนใจใช้งาน Template อื่นๆ โปรดติดต่อทีมของเรา</p>
+        </div>
+
+        <!-- MENU SECTION -->
+        <div class="menu-section">
+            <div class="menu-title">
+                <span class="menu-title-icon">📋</span>
+                Template บัญชีรายวัน
+            </div>
+
+            <div class="menu-grid">
+                <!-- ITEM 1: ใบสำคัญจ่าย -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">1</div>
+                    <div class="menu-title-text">ใบสำคัญจ่าย</div>
+                    <div class="menu-description">เอกสารการจ่ายเงิน สำหรับบันทึกการซื้อสินค้าหรือบริการ</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 2: ใบสำคัญรับ -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">2</div>
+                    <div class="menu-title-text">ใบสำคัญรับ</div>
+                    <div class="menu-description">เอกสารการรับเงิน สำหรับบันทึกการรับชำระเงินจากลูกค้า</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 3: หนังสือรับรอง -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">3</div>
+                    <div class="menu-title-text">หนังสือรับรองการหักภาษี ณ ที่จ่าย 50 ทวิ</div>
+                    <div class="menu-description">เอกสารการหักภาษี สำหรับการไฟการหักบัญชีปกติของบริษัท</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 4: รายงานสินค้า -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">4</div>
+                    <div class="menu-title-text">รายงานสินค้าและวัตถุดิบ</div>
+                    <div class="menu-description">รายงานสินค้าคงคลัง สำหรับจัดการวัตถุดิบและสินค้า</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 5: ต้นฉบับใบกำกับภาษี -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">5</div>
+                    <div class="menu-title-text">ต้นฉบับใบกำกับภาษี</div>
+                    <div class="menu-description">เอกสารใบกำกับภาษี (Invoice) สำหรับการขายสินค้า</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 6: ใบวางบิล -->
+                <div class="menu-card coming-soon">
+                    <div class="menu-number">6</div>
+                    <div class="menu-title-text">ใบวางบิล</div>
+                    <div class="menu-description">เอกสารขออนุมัติวางบิล สำหรับการรับชำระเงินตามหนี้</div>
+                    <div class="menu-badge">Coming Soon</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Excel</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-disabled">ในการพัฒนา</button>
+                    </div>
+                </div>
+
+                <!-- ITEM 7: ใบเสร็จรับเงิน (ACTIVE MVP) -->
+                <div class="menu-card active">
+                    <div class="menu-number">7</div>
+                    <div class="menu-title-text">ใบเสร็จรับเงิน</div>
+                    <div class="menu-description">เอกสารใบเสร็จรับเงิน สำหรับบันทึกการรับชำระเงินขายสินค้า</div>
+                    <div class="menu-badge available">🚀 MVP Active</div>
+                    <div class="menu-file-type">
+                        ไฟล์: <span>Web App + PDF</span>
+                    </div>
+                    <div class="menu-action">
+                        <button class="btn-menu btn-menu-active" onclick="openReceiptApp()">เข้าใช้งาน →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openReceiptApp() {
+            // ไปยัง Receipt Editor App
+            window.location.href = 'app.html';
+        }
+
+        function goToLanding() {
+            // ไปยัง Landing Page
+            window.location.href = 'index.html';
+        }
+
+        // Add smooth scroll animation
+        document.querySelectorAll('.menu-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Netlify Configuration
+# This ensures all pages work correctly
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+# Allow direct access to pages
+[[redirects]]
+from = "/index.html"
+to = "/index.html"
+status = 200
+
+[[redirects]]
+from = "/menu.html"
+to = "/menu.html"
+status = 200
+
+[[redirects]]
+from = "/app.html"
+to = "/app.html"
+status = 200

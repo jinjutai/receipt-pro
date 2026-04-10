@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสร้างใบเสร็จ</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Prompt:wght@300;400;500;600&family=Noto+Serif+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Sarabun','Segoe UI',sans-serif;background:#f0f0f0;color:#333;}
+    .app-wrapper{display:flex;height:100vh;overflow:hidden;}
+
+    /* SIDEBAR */
+    .sidebar{width:285px;min-width:285px;background:white;border-right:1px solid #e8e8e8;padding:16px;overflow-y:auto;}
+    .sidebar-title{font-size:10px;font-weight:700;color:#bbb;margin-bottom:10px;text-transform:uppercase;letter-spacing:1.5px;}
+    .sidebar-section{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f5f5f5;}
+    .form-group{margin-bottom:9px;}
+    .form-label{font-size:11px;font-weight:600;color:#666;margin-bottom:3px;display:block;}
+    .form-input,.form-textarea{padding:7px 10px;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;font-family:'Sarabun',sans-serif;width:100%;transition:border-color .2s;}
+    .form-input:focus,.form-textarea:focus{outline:none;border-color:#2c5aa0;box-shadow:0 0 0 3px rgba(44,90,160,.08);}
+    .logo-preview{width:100%;height:68px;border:2px dashed #e0e0e0;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#fafafa;overflow:hidden;margin-top:5px;font-size:22px;color:#ccc;}
+    .logo-preview img{max-width:100%;max-height:100%;object-fit:contain;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+    /* MAIN */
+    .main-content{flex:1;display:flex;overflow:hidden;min-width:0;}
+    .editor-panel{flex:1;min-width:0;padding:18px;overflow-y:auto;background:white;border-right:1px solid #e8e8e8;}
+    .preview-panel{width:505px;min-width:505px;background:#e2e2e2;display:flex;flex-direction:column;overflow:hidden;}
+
+    /* TOOLBAR */
+    .toolbar{display:flex;gap:7px;margin-bottom:18px;align-items:center;flex-wrap:wrap;}
+    .btn{padding:8px 13px;border:1px solid #ddd;background:white;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;font-family:'Sarabun',sans-serif;transition:all .15s;white-space:nowrap;}
+    .btn:hover{background:#f5f5f5;}
+    .btn-primary{background:#2980b9;color:white;border-color:#2980b9;}
+    .btn-primary:hover{background:#1e6fa0;}
+    .btn-success{background:#27ae60;color:white;border-color:#27ae60;}
+    .btn-success:hover{background:#1d9450;}
+    .btn-danger{background:#e74c3c;color:white;border-color:#c0392b;}
+    .btn-danger:hover{background:#c0392b;}
+
+    /* STYLE SELECTOR */
+    .style-wrap{display:flex;align-items:center;gap:7px;padding:5px 11px;background:#f0f5ff;border:1.5px solid #c0d0ea;border-radius:7px;}
+    .style-wrap-lbl{font-size:10px;font-weight:700;color:#2c5aa0;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+    .style-select{padding:4px 6px;border:none;background:transparent;font-size:13px;font-family:'Sarabun',sans-serif;color:#1a3a6b;font-weight:600;cursor:pointer;outline:none;}
+
+    /* EDITOR ITEMS */
+    .section-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #f0f0f0;letter-spacing:1px;}
+    .item-header{display:grid;grid-template-columns:42px 1fr 60px 80px 80px 32px;gap:5px;margin-bottom:4px;}
+    .item-header span{font-size:10px;color:#bbb;font-weight:600;}
+    .item-row{display:grid;grid-template-columns:42px 1fr 60px 80px 80px 32px;gap:5px;margin-bottom:6px;align-items:center;}
+    .item-row input{padding:6px 7px;border:1px solid #e0e0e0;border-radius:5px;font-size:12px;font-family:'Sarabun',sans-serif;width:100%;}
+    .btn-remove{padding:5px;background:#fff0f0;border:1px solid #fcc;color:#c33;border-radius:5px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+    .btn-remove:hover{background:#fcc;}
+    .btn-add{background:#edf3ff;color:#2c5aa0;border:1.5px dashed #2c5aa0;margin-top:6px;}
+    .btn-add:hover{background:#dde8ff;}
+
+    /* COLOR BAR */
+    .color-bar{background:white;border-bottom:1px solid #ddd;padding:9px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;min-height:48px;}
+    .color-bar-lbl{font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+    .swatches-row{display:flex;gap:10px;align-items:center;}
+    .swatch-item{display:flex;align-items:center;gap:5px;cursor:pointer;}
+    .swatch{width:24px;height:24px;border-radius:50%;border:2.5px solid transparent;transition:all .18s;box-shadow:0 1px 5px rgba(0,0,0,.2);flex-shrink:0;}
+    .swatch.active{border-color:#111;box-shadow:0 0 0 2px white,0 0 0 4px #333;transform:scale(1.15);}
+    .swatch-lbl{font-size:11px;color:#888;white-space:nowrap;}
+    .style-badge{margin-left:auto;font-size:11px;background:#f5f5f5;color:#777;padding:3px 10px;border-radius:10px;font-weight:600;white-space:nowrap;}
+
+    /* PREVIEW AREA */
+    .preview-scroll{flex:1;overflow-y:auto;padding:16px;}
+    .receipt-shadow{border-radius:5px;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,.2);transition:box-shadow .3s;}
+    #receiptPreview{transition:opacity .15s;}
+
+    /* PRINT */
+    @media print{
+      .sidebar,.editor-panel,.color-bar,.style-wrap,.toolbar{display:none!important;}
+      .app-wrapper{display:block;height:auto;}
+      .preview-panel{width:100%;min-width:unset;}
+      .preview-scroll{padding:0;overflow:visible;}
+      .receipt-shadow{box-shadow:none;border-radius:0;}
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- ░░ SIDEBAR ░░ -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">ตั้งค่าร้านค้า</div>
+      <div class="form-group">
+        <label class="form-label">โลโก้ร้าน</label>
+        <input type="file" id="logoInput" accept="image/*" class="form-input" style="padding:5px;">
+        <div class="logo-preview" id="logoPreview">📸</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ชื่อร้าน</label>
+        <input type="text" id="businessName" class="form-input" value="ร้านแบบตัวอย่าง">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ที่อยู่</label>
+        <textarea id="businessAddress" class="form-textarea" style="min-height:52px;">123 ถนนสุขุมวิท แขวงสำโรง เขตสมุทรปราการ</textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">โทรศัพท์</label>
+          <input type="text" id="businessPhone" class="form-input" value="081-234-5678">
+        </div>
+        <div class="form-group">
+          <label class="form-label">เลขประจำตัว</label>
+          <input type="text" id="taxId" class="form-input" value="0105555003241">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░░ MAIN ░░ -->
+  <div class="main-content">
+
+    <!-- EDITOR -->
+    <div class="editor-panel">
+      <div class="toolbar">
+        <button class="btn btn-danger" onclick="goBackToMenu()">← กลับ</button>
+        <div class="style-wrap">
+          <span class="style-wrap-lbl">รูปแบบ</span>
+          <select class="style-select" id="styleSelect" onchange="onStyleChange()">
+            <option value="1">📄 แบบมาตรฐาน</option>
+            <option value="2">🖤 แบบเท่</option>
+            <option value="3">💼 แบบองค์กร</option>
+            <option value="4">✨ แบบหรูหรา</option>
+            <option value="5">🌿 แบบมินิมอล</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="downloadPDF()">📄 PDF</button>
+
+        <button class="btn" onclick="resetForm()">🔄 ล้าง</button>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <div class="section-title">ข้อมูลใบเสร็จ</div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">เลขที่</label><input type="text" id="receiptNumber" class="form-input" value="001"></div>
+          <div class="form-group"><label class="form-label">วันที่</label><input type="date" id="receiptDate" class="form-input"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <div class="section-title">ข้อมูลลูกค้า</div>
+        <div class="form-group"><label class="form-label">ชื่อลูกค้า</label><input type="text" id="customerName" class="form-input" value="นายสมใจ ใจดี"></div>
+        <div class="form-group"><label class="form-label">ที่อยู่ (ไม่บังคับ)</label><textarea id="customerAddress" class="form-textarea" style="min-height:42px;"></textarea></div>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <div class="section-title">รายการสินค้า</div>
+        <div class="item-header">
+          <span style="text-align:center;">ลำดับ</span><span>รายการ</span>
+          <span style="text-align:center;">จำนวน</span>
+          <span style="text-align:right;">ราคา</span>
+          <span style="text-align:right;">รวม</span><span></span>
+        </div>
+        <div id="itemsContainer">
+          <div class="item-row">
+            <input type="number" value="1" class="item-index" min="1" style="text-align:center;">
+            <input type="text" placeholder="รายการ" class="item-name" value="สินค้าตัวอย่าง">
+            <input type="number" class="item-qty" value="2" min="0.01" step="0.01" style="text-align:center;">
+            <input type="number" class="item-price" value="100" min="0" step="0.01" style="text-align:right;">
+            <input type="number" class="item-total" readonly style="background:#f5f5f5;text-align:right;" value="200">
+            <button class="btn-remove" onclick="this.parentElement.remove();updatePreview()">✕</button>
+          </div>
+        </div>
+        <button class="btn btn-add" onclick="addItem()">+ เพิ่มรายการ</button>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <div class="section-title">ส่วนรวม</div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">ยอดรวม</label><input type="number" id="subtotal" class="form-input" value="200" readonly style="background:#f8f8f8;"></div>
+          <div class="form-group"><label class="form-label">ส่วนลด</label><input type="number" id="discount" class="form-input" value="0" min="0"></div>
+        </div>
+        <div class="grid-2" style="margin-top:7px;">
+          <div class="form-group"><label class="form-label">ภาษี %</label><input type="number" id="vatPercent" class="form-input" value="0" min="0" max="100"></div>
+          <div class="form-group"><label class="form-label">ยอดสุทธิ</label><input type="number" id="grandTotal" class="form-input" value="200" readonly style="background:#f8f8f8;font-weight:700;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-panel">
+      <div class="color-bar" id="colorBar">
+        <span class="color-bar-lbl">สี</span>
+        <div class="swatches-row" id="swatchesRow"></div>
+        <span class="style-badge" id="styleBadge">แบบมาตรฐาน</span>
+      </div>
+      <div class="preview-scroll">
+        <div class="receipt-shadow">
+          <div id="receiptPreview"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   CONFIG — 5 สไตล์ + สีต่างๆ
+══════════════════════════════════════ */
+const STYLES = {
+  1: {
+    name:'แบบมาตรฐาน',
+    colors:[
+      {label:'น้ำเงิน', v:'#2980b9', d:'#1a5276', hex:'#2980b9'},
+      {label:'เขียว',   v:'#27ae60', d:'#1a6b40', hex:'#27ae60'}
+    ]
+  },
+  2: {
+    name:'แบบเท่',
+    colors:[
+      {label:'ทอง',   v:'#FFD700', d:'#a87d00', hex:'#FFD700'},
+      {label:'มรกต',  v:'#00e5cc', d:'#009688', hex:'#00e5cc'}
+    ]
+  },
+  3: {
+    name:'แบบองค์กร',
+    colors:[
+      {label:'น้ำเงิน', v:'#0052cc', d:'#1a3a6b', hex:'#0052cc'},
+      {label:'เทียล',   v:'#00695c', d:'#004d40', hex:'#00695c'}
+    ]
+  },
+  4: {
+    name:'แบบหรูหรา',
+    colors:[
+      {label:'ทอง',       v:'#D4AF37', d:'#8B7355', hex:'#D4AF37'},
+      {label:'โรสโกลด์', v:'#b5716a', d:'#7a4a44', hex:'#b5716a'}
+    ]
+  },
+  5: {
+    name:'แบบมินิมอล',
+    colors:[
+      {label:'ชมพู', v:'#d4607a', d:'#9b2a48', hex:'#ffb3c8', bg:'#fff8fa'},
+      {label:'ฟ้า',  v:'#4898cc', d:'#1a5888', hex:'#a8d8f5', bg:'#f4f9ff'}
+    ]
+  }
+};
+
+let currentStyle = 1;
+let currentColorIdx = 0;
+let currentLogoSrc = '';
+
+/* ═══════════ INIT ═══════════ */
+document.getElementById('receiptDate').valueAsDate = new Date();
+
+document.getElementById('logoInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    currentLogoSrc = ev.target.result;
+    document.getElementById('logoPreview').innerHTML = `<img src="${currentLogoSrc}">`;
+    updatePreview();
+  };
+  r.readAsDataURL(file);
+});
+
+['businessName','businessAddress','businessPhone','taxId',
+ 'receiptNumber','receiptDate','customerName','customerAddress',
+ 'discount','vatPercent'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', updatePreview);
+});
+
+/* ═══════════ ITEMS ═══════════ */
+function setupItemRow(row){
+  const recalc = () => {
+    const qty = parseFloat(row.querySelector('.item-qty').value)||0;
+    const price = parseFloat(row.querySelector('.item-price').value)||0;
+    row.querySelector('.item-total').value = (qty*price).toFixed(2);
+    updatePreview();
+  };
+  row.querySelector('.item-qty').addEventListener('input', recalc);
+  row.querySelector('.item-price').addEventListener('input', recalc);
+  row.querySelectorAll('input').forEach(i=>i.addEventListener('change', updatePreview));
+}
+document.querySelectorAll('.item-row').forEach(setupItemRow);
+
+function addItem(){
+  const c = document.getElementById('itemsContainer');
+  const idx = c.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML = `<input type="number" value="${idx}" class="item-index" min="1" style="text-align:center;"><input type="text" placeholder="รายการ" class="item-name"><input type="number" class="item-qty" value="1" min="0.01" step="0.01" style="text-align:center;"><input type="number" class="item-price" value="0" min="0" step="0.01" style="text-align:right;"><input type="number" class="item-total" readonly style="background:#f5f5f5;text-align:right;" value="0"><button class="btn-remove" onclick="this.parentElement.remove();updatePreview()">✕</button>`;
+  c.appendChild(row);
+  setupItemRow(row);
+  updatePreview();
+}
+
+/* ═══════════ DATA ═══════════ */
+function calcTotals(){
+  let sub = 0;
+  document.querySelectorAll('.item-row').forEach(r => {
+    sub += parseFloat(r.querySelector('.item-total').value)||0;
+  });
+  const disc = parseFloat(document.getElementById('discount').value)||0;
+  const vatP = parseFloat(document.getElementById('vatPercent').value)||0;
+  const after = sub - disc;
+  const vat = after * vatP / 100;
+  return {subtotal:sub, discount:disc, vat, grandTotal:after+vat};
+}
+
+function getFormData(){
+  const items = [];
+  document.querySelectorAll('.item-row').forEach((row,i)=>{
+    items.push({
+      index: i+1,
+      name:  row.querySelector('.item-name').value || '-',
+      qty:   row.querySelector('.item-qty').value || '0',
+      price: parseFloat(row.querySelector('.item-price').value)||0,
+      total: parseFloat(row.querySelector('.item-total').value)||0
+    });
+  });
+  return {
+    logoSrc:         currentLogoSrc,
+    businessName:    document.getElementById('businessName').value||'',
+    businessAddress: document.getElementById('businessAddress').value||'',
+    businessPhone:   document.getElementById('businessPhone').value||'',
+    taxId:           document.getElementById('taxId').value||'',
+    receiptNumber:   document.getElementById('receiptNumber').value||'001',
+    receiptDate:     document.getElementById('receiptDate').value||'-',
+    customerName:    document.getElementById('customerName').value||'',
+    customerAddress: document.getElementById('customerAddress').value||'',
+    items,
+    ...calcTotals()
+  };
+}
+
+/* ═══════════ STYLE & COLOR SWITCHER ═══════════ */
+function onStyleChange(){
+  currentStyle = parseInt(document.getElementById('styleSelect').value);
+  currentColorIdx = 0;
+  refreshColorBar();
+  updatePreview();
+}
+
+function setColor(idx){
+  currentColorIdx = idx;
+  refreshColorBar();
+  updatePreview();
+}
+
+function refreshColorBar(){
+  const cfg = STYLES[currentStyle];
+  document.getElementById('styleBadge').textContent = cfg.name;
+  document.getElementById('swatchesRow').innerHTML = cfg.colors.map((c,i)=>`
+    <div class="swatch-item" onclick="setColor(${i})">
+      <div class="swatch ${i===currentColorIdx?'active':''}" style="background:${c.hex};" title="${c.label}"></div>
+      <span class="swatch-lbl">${c.label}</span>
+    </div>
+  `).join('');
+}
+
+/* ═══════════ HELPERS ═══════════ */
+function logoHTML(src, size=70, radius='6px', border='', bg='white', pad='0'){
+  if(!src) return '';
+  return `<img src="${src}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:${radius};${border?'border:'+border+';':''}${bg?'background:'+bg+';':''}padding:${pad};flex-shrink:0;">`;
+}
+
+function totalsBlock(data, accentBg, accentText, borderColor){
+  return `
+  <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+    <div style="min-width:205px;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;color:#999;border-bottom:1px solid ${borderColor};"><span>ยอดรวม</span><span>${data.subtotal.toFixed(2)}</span></div>
+      ${data.discount>0?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;color:#999;border-bottom:1px solid ${borderColor};"><span>ส่วนลด</span><span>-${data.discount.toFixed(2)}</span></div>`:''}
+      ${data.vat>0?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;color:#999;border-bottom:1px solid ${borderColor};"><span>ภาษี</span><span>${data.vat.toFixed(2)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;padding:10px 13px;background:${accentBg};color:${accentText};border-radius:7px;margin-top:6px;font-size:15px;font-weight:700;">
+        <span>ยอดสุทธิ</span><span>${data.grandTotal.toFixed(2)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tableHTML(items, hBg, hColor, altBg, totalColor, bdColor='#eee'){
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
+    <thead><tr style="background:${hBg};">
+      <th style="padding:9px 7px;text-align:left;color:${hColor};font-size:10px;width:34px;">#</th>
+      <th style="padding:9px 7px;text-align:left;color:${hColor};font-size:10px;">รายการ</th>
+      <th style="padding:9px 7px;text-align:center;color:${hColor};font-size:10px;width:50px;">จำนวน</th>
+      <th style="padding:9px 7px;text-align:right;color:${hColor};font-size:10px;width:68px;">ราคา</th>
+      <th style="padding:9px 7px;text-align:right;color:${hColor};font-size:10px;width:68px;">รวม</th>
+    </tr></thead>
+    <tbody>
+    ${items.map((it,i)=>`
+      <tr style="background:${i%2===0?'white':altBg};">
+        <td style="padding:8px 7px;border-bottom:1px solid ${bdColor};text-align:center;color:#bbb;">${it.index}</td>
+        <td style="padding:8px 7px;border-bottom:1px solid ${bdColor};">${it.name}</td>
+        <td style="padding:8px 7px;border-bottom:1px solid ${bdColor};text-align:center;">${it.qty}</td>
+        <td style="padding:8px 7px;border-bottom:1px solid ${bdColor};text-align:right;">${it.price.toFixed(2)}</td>
+        <td style="padding:8px 7px;border-bottom:1px solid ${bdColor};text-align:right;font-weight:600;color:${totalColor};">${it.total.toFixed(2)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER 1 — แบบมาตรฐาน
+   โลโก้ซ้าย | ชื่อร้านกลาง | ชื่อเอกสารขวา
+══════════════════════════════════════════════ */
+function renderStandard(d, c){
+  const {v,dark:dk} = c;
+  return `<div style="background:white;padding:28px;font-family:'Sarabun',sans-serif;font-size:14px;color:#333;">
+    <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;padding-bottom:14px;border-bottom:2.5px solid ${v};">
+      ${logoHTML(d.logoSrc)}
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:700;margin-bottom:3px;">${d.businessName}</div>
+        <div style="font-size:12px;color:#999;line-height:1.7;">ที่อยู่: ${d.businessAddress}<br>โทร: ${d.businessPhone} &nbsp;|&nbsp; เลขประจำตัว: ${d.taxId}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:18px;font-weight:700;color:${v};">ใบเสร็จรับเงิน</div>
+        <div style="font-size:12px;color:#aaa;margin-top:4px;line-height:1.8;">เลขที่: ${d.receiptNumber}<br>วันที่: ${d.receiptDate}</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;padding:9px 13px;background:#f8f9fa;border-radius:6px;border-left:3px solid ${v};">
+      <div style="font-size:11px;color:#bbb;margin-bottom:1px;">ลูกค้า</div>
+      <div style="font-weight:600;font-size:15px;">${d.customerName}</div>
+      ${d.customerAddress?`<div style="font-size:12px;color:#999;margin-top:2px;">${d.customerAddress}</div>`:''}
+    </div>
+    ${tableHTML(d.items, v, 'white', '#f8f9fa', dk)}
+    ${totalsBlock(d, v, 'white', '#eee')}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER 2 — แบบเท่ (Dark Noir)
+   โลโก้ขวา | ชื่อเอกสาร big left | monospace
+══════════════════════════════════════════════ */
+function renderCool(d, c){
+  const {v,dark:dk} = c;
+  return `<div style="background:#0d0d0d;padding:28px;font-family:'Sarabun',sans-serif;color:#ddd;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-size:20px;font-weight:600;color:white;">${d.businessName}</div>
+        <div style="font-size:12px;color:#555;margin-top:6px;line-height:1.8;">${d.businessAddress}<br>โทร: ${d.businessPhone} &nbsp;|&nbsp; เลขประจำตัว: ${d.taxId}</div>
+      </div>
+      ${d.logoSrc
+        ? `<img src="${d.logoSrc}" style="width:70px;height:70px;object-fit:contain;opacity:.85;border:1px solid #2a2a2a;border-radius:6px;padding:5px;background:#181818;">`
+        : `<div style="font-size:9px;font-family:monospace;color:${v};letter-spacing:3px;margin-top:4px;">RECEIPT</div>`}
+    </div>
+    <div style="height:1px;background:${v};margin-bottom:18px;opacity:0.5;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+      <div style="font-size:36px;color:${v};font-weight:700;line-height:1;">ใบเสร็จ</div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;font-weight:600;color:${v};margin-bottom:3px;">เลขที่</div>
+        <div style="font-size:17px;color:white;font-family:monospace;">#${d.receiptNumber}</div>
+        <div style="font-size:12px;color:#555;margin-top:3px;">${d.receiptDate}</div>
+      </div>
+    </div>
+    <div style="background:#181818;padding:13px;border-left:3px solid ${v};margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:600;color:${v};margin-bottom:4px;">ลูกค้า</div>
+      <div style="font-size:14px;color:white;">${d.customerName}</div>
+      ${d.customerAddress?`<div style="font-size:12px;color:#555;margin-top:2px;">${d.customerAddress}</div>`:''}
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;">
+      <thead><tr>
+        <th style="padding:8px 7px;color:#555;font-size:11px;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;text-align:left;width:34px;">#</th>
+        <th style="padding:8px 7px;color:#555;font-size:11px;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;text-align:left;">รายการ</th>
+        <th style="padding:8px 7px;color:#555;font-size:11px;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;text-align:center;width:50px;">จำนวน</th>
+        <th style="padding:8px 7px;color:#555;font-size:11px;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;text-align:right;width:68px;">ราคา</th>
+        <th style="padding:8px 7px;color:#555;font-size:11px;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e;text-align:right;width:68px;">รวม</th>
+      </tr></thead>
+      <tbody>
+      ${d.items.map(it=>`
+        <tr>
+          <td style="padding:10px 7px;border-bottom:1px solid #161616;text-align:center;color:#444;">${it.index}</td>
+          <td style="padding:10px 7px;border-bottom:1px solid #161616;color:#bbb;">${it.name}</td>
+          <td style="padding:10px 7px;border-bottom:1px solid #161616;text-align:center;color:#888;">${it.qty}</td>
+          <td style="padding:10px 7px;border-bottom:1px solid #161616;text-align:right;font-family:monospace;color:#666;">${it.price.toFixed(2)}</td>
+          <td style="padding:10px 7px;border-bottom:1px solid #161616;text-align:right;font-family:monospace;color:${v};">${it.total.toFixed(2)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:flex-end;">
+      <div style="min-width:205px;">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;color:#555;font-size:13px;border-bottom:1px solid #1e1e1e;"><span>ยอดรวม</span><span style="font-family:monospace;">${d.subtotal.toFixed(2)}</span></div>
+        ${d.discount>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;color:#555;font-size:13px;border-bottom:1px solid #1e1e1e;"><span>ส่วนลด</span><span style="font-family:monospace;">-${d.discount.toFixed(2)}</span></div>`:''}
+        ${d.vat>0?`<div style="display:flex;justify-content:space-between;padding:5px 0;color:#555;font-size:13px;border-bottom:1px solid #1e1e1e;"><span>ภาษี</span><span style="font-family:monospace;">${d.vat.toFixed(2)}</span></div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:11px 0;font-size:17px;border-top:1px solid ${v};margin-top:4px;">
+          <span style="color:#ccc;">ยอดสุทธิ</span>
+          <span style="color:${v};font-weight:700;font-family:monospace;">${d.grandTotal.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER 3 — แบบองค์กร (Corporate)
+   โลโก้กลางใน header block ใหญ่ + blue badge
+══════════════════════════════════════════════ */
+function renderCorporate(d, c){
+  const {v,dark:dk} = c;
+  return `<div style="background:white;font-family:'Sarabun',sans-serif;">
+    <div style="background:${dk};padding:24px 30px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        ${d.logoSrc?`<img src="${d.logoSrc}" style="width:64px;height:64px;object-fit:contain;background:white;border-radius:6px;padding:4px;">`:''}
+        <div>
+          <div style="font-size:19px;font-weight:700;color:white;">${d.businessName}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;">${d.businessAddress}&nbsp;|&nbsp;โทร: ${d.businessPhone}</div>
+        </div>
+      </div>
+      <div style="background:${v};border-radius:7px;padding:9px 16px;text-align:right;">
+        <div style="font-size:15px;font-weight:700;color:white;font-style:italic;">ใบเสร็จรับเงิน</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;">#${d.receiptNumber}&nbsp;&nbsp;|&nbsp;&nbsp;${d.receiptDate}</div>
+      </div>
+    </div>
+    <div style="padding:22px 30px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;background:#f0f5ff;border-radius:8px;padding:16px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:${v};margin-bottom:6px;">ลูกค้า</div>
+          <div style="font-size:15px;font-weight:700;color:${dk};">${d.customerName}</div>
+          ${d.customerAddress?`<div style="font-size:11px;color:#5a7299;margin-top:3px;">${d.customerAddress}</div>`:''}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:${v};margin-bottom:6px;">ข้อมูล</div>
+          <div style="font-size:11px;color:#5a7299;line-height:1.9;">โทร: ${d.businessPhone}<br>เลขประจำตัว: ${d.taxId}</div>
+        </div>
+      </div>
+      ${tableHTML(d.items, dk, 'white', '#f0f5ff', dk, '#c5d8f5')}
+      <div style="display:flex;justify-content:flex-end;">
+        <div style="min-width:210px;">
+          <div style="display:flex;justify-content:space-between;padding:7px 11px;font-size:13px;color:#5a7299;border-bottom:1px solid #c5d8f5;"><span>ยอดรวม</span><span>${d.subtotal.toFixed(2)}</span></div>
+          ${d.discount>0?`<div style="display:flex;justify-content:space-between;padding:7px 11px;font-size:13px;color:#5a7299;border-bottom:1px solid #c5d8f5;"><span>ส่วนลด</span><span>-${d.discount.toFixed(2)}</span></div>`:''}
+          ${d.vat>0?`<div style="display:flex;justify-content:space-between;padding:7px 11px;font-size:13px;color:#5a7299;border-bottom:1px solid #c5d8f5;"><span>ภาษี</span><span>${d.vat.toFixed(2)}</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:12px 15px;background:${v};border-radius:0 0 7px 7px;font-size:16px;font-weight:700;color:white;margin-top:2px;"><span>ยอดสุทธิ</span><span>${d.grandTotal.toFixed(2)}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER 4 — แบบหรูหรา (Elegant Gold)
+   โลโก้กลางด้านบน + ornamental divider + cream
+══════════════════════════════════════════════ */
+function renderElegant(d, c){
+  const {v,dark:dk} = c;
+  return `<div style="background:#FDFAF5;font-family:'Sarabun',sans-serif;color:#2C1810;">
+    <div style="background:#2C1810;padding:26px;text-align:center;">
+      ${d.logoSrc?`<img src="${d.logoSrc}" style="width:72px;height:72px;object-fit:contain;border-radius:50%;border:2px solid ${v};display:block;margin:0 auto 12px;">`:''}
+      <div style="font-size:21px;font-weight:700;color:${v};">${d.businessName}</div>
+      <div style="font-size:11px;color:rgba(212,175,55,.4);letter-spacing:1px;margin-top:3px;">${d.businessPhone}&nbsp;&nbsp;|&nbsp;&nbsp;${d.taxId}</div>
+      <div style="margin-top:9px;font-size:13px;color:${v};letter-spacing:7px;">◆ ✦ ◆</div>
+    </div>
+    <div style="height:1px;background:${v};opacity:0.5;margin:0 20px;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 26px;background:#F5EDD8;border-bottom:1px solid #E8D5A0;">
+      <div style="font-size:28px;font-style:italic;color:${dk};font-weight:400;">ใบเสร็จรับเงิน</div>
+      <div style="text-align:right;font-size:12px;color:#6B4C35;line-height:2.1;">
+        เลขที่ <strong style="color:#2C1810;">#${d.receiptNumber}</strong><br>
+        วันที่ <strong style="color:#2C1810;">${d.receiptDate}</strong>
+      </div>
+    </div>
+    <div style="padding:22px 26px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;border:1px solid #E8D5A0;padding:15px;background:#FFFCF5;">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:${v};margin-bottom:5px;">ลูกค้า</div>
+          <div style="font-size:15px;font-weight:600;">${d.customerName}</div>
+          ${d.customerAddress?`<div style="font-size:12px;color:#6B4C35;margin-top:2px;">${d.customerAddress}</div>`:''}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:${v};margin-bottom:5px;">ข้อมูล</div>
+          <div style="font-size:12px;color:#6B4C35;line-height:1.9;">โทร: ${d.businessPhone}<br>เลขประจำตัว: ${d.taxId}</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;">
+        <thead><tr style="background:#2C1810;border-top:2px solid ${v};border-bottom:2px solid ${v};">
+          <th style="padding:9px 7px;text-align:left;color:${v};font-size:11px;width:34px;">#</th>
+          <th style="padding:9px 7px;text-align:left;color:${v};font-size:11px;">รายการ</th>
+          <th style="padding:9px 7px;text-align:center;color:${v};font-size:11px;width:50px;">จำนวน</th>
+          <th style="padding:9px 7px;text-align:right;color:${v};font-size:11px;width:68px;">ราคา</th>
+          <th style="padding:9px 7px;text-align:right;color:${v};font-size:11px;width:68px;">รวม</th>
+        </tr></thead>
+        <tbody>
+        ${d.items.map(it=>`
+          <tr style="border-bottom:1px solid #E8D5A0;">
+            <td style="padding:11px 7px;text-align:center;color:#6B4C35;">${it.index}</td>
+            <td style="padding:11px 7px;">${it.name}</td>
+            <td style="padding:11px 7px;text-align:center;">${it.qty}</td>
+            <td style="padding:11px 7px;text-align:right;color:#6B4C35;">${it.price.toFixed(2)}</td>
+            <td style="padding:11px 7px;text-align:right;font-weight:700;color:${dk};">${it.total.toFixed(2)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+        <div style="min-width:205px;border:1px solid #E8D5A0;">
+          <div style="display:flex;justify-content:space-between;padding:8px 11px;color:#6B4C35;font-size:13px;border-bottom:1px solid #E8D5A0;"><span>ยอดรวม</span><span>${d.subtotal.toFixed(2)}</span></div>
+          ${d.discount>0?`<div style="display:flex;justify-content:space-between;padding:8px 11px;color:#6B4C35;font-size:13px;border-bottom:1px solid #E8D5A0;"><span>ส่วนลด</span><span>-${d.discount.toFixed(2)}</span></div>`:''}
+          ${d.vat>0?`<div style="display:flex;justify-content:space-between;padding:8px 11px;color:#6B4C35;font-size:13px;border-bottom:1px solid #E8D5A0;"><span>ภาษี</span><span>${d.vat.toFixed(2)}</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:12px 11px;background:#2C1810;font-size:16px;font-weight:700;color:${v};"><span>ยอดสุทธิ</span><span>${d.grandTotal.toFixed(2)}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;padding-top:14px;border-top:1px solid #E8D5A0;">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:${v};margin-bottom:20px;">ลายเซ็นผู้รับเงิน</div>
+          <div style="border-top:1px solid ${v};padding-top:4px;font-size:11px;color:#6B4C35;font-style:italic;">ผู้รับเงิน</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:${v};margin-bottom:20px;">ลายเซ็นลูกค้า</div>
+          <div style="border-top:1px solid ${v};padding-top:4px;font-size:11px;color:#6B4C35;font-style:italic;">ลูกค้า</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER 5 — แบบมินิมอล (Minimal Zen)
+   Typography-first | เส้น 2px accent | ไม่มี border box
+══════════════════════════════════════════════ */
+function renderMinimal(d, c){
+  const {v, dark:dk, bg:recBg='#FAFAFA'} = c;
+  return `<div style="background:${recBg};padding:30px;font-family:'Prompt','Sarabun',sans-serif;color:#2a2a3a;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${d.logoSrc?`<img src="${d.logoSrc}" style="width:64px;height:64px;object-fit:contain;border-radius:6px;">`:''}
+        <div>
+          <div style="font-size:18px;font-weight:600;color:#2a2a3a;">${d.businessName}</div>
+          <div style="font-size:12px;color:#5A7A5A;margin-top:3px;line-height:1.8;">${d.businessAddress}<br>โทร: ${d.businessPhone}</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px;font-weight:700;color:${v};margin-bottom:4px;">ใบเสร็จรับเงิน</div>
+        <div style="font-size:24px;font-weight:700;color:#2a2a3a;line-height:1;">#${d.receiptNumber}</div>
+        <div style="font-size:11px;color:#bbb;margin-top:4px;">${d.receiptDate}</div>
+      </div>
+    </div>
+    <div style="height:2px;background:${v};margin-bottom:22px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px;">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:${v};margin-bottom:5px;">ลูกค้า</div>
+        <div style="font-size:14px;color:#2a2a3a;line-height:1.7;">${d.customerName}</div>
+        ${d.customerAddress?`<div style="font-size:12px;color:#5A7A5A;margin-top:2px;">${d.customerAddress}</div>`:''}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:${v};margin-bottom:5px;">ข้อมูล</div>
+        <div style="font-size:12px;color:#5A7A5A;line-height:1.9;">โทร: ${d.businessPhone}<br>เลขประจำตัว: ${d.taxId}</div>
+      </div>
+    </div>
+    ${tableHTML(d.items, v, 'white', '#F0F4F0', v, '#D8E4D8')}
+    <div style="display:flex;justify-content:flex-end;">
+      <div style="min-width:205px;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#5A7A5A;border-bottom:1px solid #D8E4D8;"><span>ยอดรวม</span><span>${d.subtotal.toFixed(2)}</span></div>
+        ${d.discount>0?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#5A7A5A;border-bottom:1px solid #D8E4D8;"><span>ส่วนลด</span><span>-${d.discount.toFixed(2)}</span></div>`:''}
+        ${d.vat>0?`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#5A7A5A;border-bottom:1px solid #D8E4D8;"><span>ภาษี</span><span>${d.vat.toFixed(2)}</span></div>`:''}
+        <div style="display:flex;justify-content:space-between;padding:11px 0;font-size:18px;font-weight:700;color:#2a2a3a;border-top:2px solid ${v};margin-top:4px;">
+          <span>ยอดสุทธิ</span><span style="color:${v};">${d.grandTotal.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const RENDERERS = {1:renderStandard, 2:renderCool, 3:renderCorporate, 4:renderElegant, 5:renderMinimal};
+
+/* ═══════════ UPDATE ═══════════ */
+function updatePreview(){
+  const data = getFormData();
+  document.getElementById('subtotal').value = data.subtotal.toFixed(2);
+  document.getElementById('grandTotal').value = data.grandTotal.toFixed(2);
+  const col = STYLES[currentStyle].colors[currentColorIdx];
+  document.getElementById('receiptPreview').innerHTML = RENDERERS[currentStyle](data, col);
+}
+
+/* ═══════════ PDF ═══════════ */
+function downloadPDF(){
+  const el = document.getElementById('receiptPreview');
+  const num = document.getElementById('receiptNumber').value || 'REC-001';
+  const dt  = document.getElementById('receiptDate').value || new Date().toISOString().split('T')[0];
+  const curColor5 = STYLES[5].colors[currentStyle===5?currentColorIdx:0];
+  const bgMap = {1:'#ffffff', 2:'#0d0d0d', 3:'#ffffff', 4:'#FDFAF5', 5:curColor5.bg||'#FAFAFA'};
+  const pdfBg = bgMap[currentStyle] || '#ffffff';
+  html2pdf().set({
+    margin: 10,
+    filename: `receipt_${num}_${dt}.pdf`,
+    image: {type:'jpeg', quality:.98},
+    html2canvas: {scale:2, useCORS:true, allowTaint:true, backgroundColor:pdfBg},
+    jsPDF: {orientation:'portrait', unit:'mm', format:'a4'}
+  }).from(el).save().catch(()=>alert('เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่'));
+}
+
+function saveReceipt(){ alert('บันทึกสำเร็จ!'); }
+
+function resetForm(){
+  if(!confirm('ต้องการล้างข้อมูลไหม?')) return;
+  document.getElementById('itemsContainer').innerHTML = `<div class="item-row"><input type="number" value="1" class="item-index" min="1" style="text-align:center;"><input type="text" placeholder="รายการ" class="item-name"><input type="number" class="item-qty" value="1" min="0.01" step="0.01" style="text-align:center;"><input type="number" class="item-price" value="0" min="0" step="0.01" style="text-align:right;"><input type="number" class="item-total" readonly style="background:#f5f5f5;text-align:right;" value="0"><button class="btn-remove" onclick="this.parentElement.remove();updatePreview()">✕</button></div>`;
+  document.getElementById('customerName').value = '';
+  document.getElementById('customerAddress').value = '';
+  document.getElementById('discount').value = '0';
+  document.getElementById('vatPercent').value = '0';
+  document.querySelectorAll('.item-row').forEach(setupItemRow);
+  updatePreview();
+}
+
+function goBackToMenu(){ window.location.href = 'menu.html'; }
+
+/* ═══════════ BOOT ═══════════ */
+refreshColorBar();
+updatePreview();
+</script>
+</body>
+</html>
